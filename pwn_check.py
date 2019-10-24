@@ -3,6 +3,8 @@ import subprocess
 import re
 
 if __name__ == '__main__':
+    # todo: 引数(実行ファイル、libc, 各項目分離)
+    #     : 結果のテキストファイルへの保存
     elf = ELF("test")  # _write4
     libc = ELF("libc.so")
 
@@ -33,6 +35,7 @@ if __name__ == '__main__':
 
     print("")
     # all functions
+    # todo: 関数の中身を調べる方法(ローカル変数の数やできるなら初期値も調べたい)
     print("[+]: all functions")
     functions = elf.functions
     # Function(name='pwnme', address=0x4007b5, size=0x52, elf=ELF('/mnt/c/share/ctf/Xornet_Tools/_write4'))
@@ -64,20 +67,22 @@ if __name__ == '__main__':
         print(table_header.format(g[0], hex(g[1])))
 
     print("")
+    # todo: 結果のパース, オブジェクトとして格納
     # rp++
     print("[+]: execute rp++")
     rppp_command = ["rp++", "-f", elf.path, "--unique", "-r", "8"]
     res = subprocess.run(rppp_command, capture_output=True)
     out = res.stdout.decode()
+    # 色消し(.txtにする際にゴミが紛れ込むので)
     pattern = r"\x1b\[[0-9]{1,2}m"
     out = re.sub(pattern, "", out)
     print(out)
 
     print("")
+    # todo: 結果のパース, オブジェクトとして格納
     # one-gadget
     print("[+]: execute one-gadget")
     one_gadget_command = ["one_gadget", libc.path]
     res = subprocess.run(one_gadget_command, capture_output=True)
     out = res.stdout.decode()
     print(out)
-
