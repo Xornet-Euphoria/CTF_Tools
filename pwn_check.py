@@ -2,6 +2,7 @@ from pwn import ELF
 import subprocess
 import re
 from section import Section
+from Rppp import Rppp
 
 
 # function for parsing rp++
@@ -63,46 +64,9 @@ if __name__ == '__main__':
     print("")
     # rp++
     print("[+]: execute rp++")
-    rop_gadgets = []
-    # 有用なGadgetは分類
-    categorized_gadgets = {
-        "call": [],
-        "jmp": [],
-        "mov": [],
-        "pop": [],
-        "other": []
-    }
-    rppp_command = ["rp++", "-f", elf.path, "--unique", "-r", "8"]
-    res = subprocess.run(rppp_command, capture_output=True)
-    out = res.stdout.decode()
-
-    # 色消し(.txtにする際にゴミが紛れ込むので)
-    color_pattern = r"\x1b\[[0-9]{1,2}m"
-    out = re.sub(color_pattern, "", out)
-    # remove discription and split results
-    rppp_pattern = r"0x[0-9a-f]{8}: .*\n"
-    match_res = re.findall(rppp_pattern, out)
+    rppp = Rppp(elf)
+    rppp.dump_all_gadgets()
     
-    # parse results
-    for line in match_res:
-        addr = int(line[2:10], 16)
-        raw_mnemonic = line[12:]
-        mnemonic = remove_footer(raw_mnemonic).rstrip()
-        rop_gadget = {"addr": addr, "mnemonic": mnemonic}
-        rop_gadgets.append(rop_gadget)
-        for key in categorized_gadgets:
-            if key == "other":
-                categorized_gadgets["other"].append(rop_gadget)
-            if mnemonic[0:len(key)] == key:
-                categorized_gadgets[key].append(rop_gadget)
-                break
-
-    table_header = "{0:10}: {1:}"
-    print(table_header.format("address", "ROP gadget"))
-    print("-" * 100)
-    for gadget in rop_gadgets:
-        print(table_header.format(hex(gadget["addr"]), gadget["mnemonic"]))
-
     print("")
     # todo: 結果のパース, オブジェクトとして格納
     # one-gadget
