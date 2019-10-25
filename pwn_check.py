@@ -1,6 +1,7 @@
 from pwn import ELF
 import subprocess
 import re
+from section import Section
 
 
 # function for parsing rp++
@@ -21,29 +22,10 @@ if __name__ == '__main__':
     libc = ELF("libc.so")
 
     print("")
-
-    # writable section
-    writable_sections = []
-    # all sections
-    print("[+]: all sections here")
-    sections = elf.sections
-    table_header = "{0:30} : {1:15} ~ {2:15} | {3:10} | {4:10}"
-    print(table_header.format("section name", "start address", "end address", "size", "is writable?"))
-    print("-" * 95)
-    for section in sections:
-        # .data: Container({'sh_name': 248, 'sh_type': 'SHT_PROGBITS', 'sh_flags': 3, 'sh_addr': 6295632, 'sh_offset': 4176, 'sh_size': 16, 'sh_link': 0, 'sh_info': 0, 'sh_addralign': 8, 'sh_entsize': 0})
-
-        # undefined section is skipped
-        if section.name == "":
-            continue
-        header = section.header
-        addr = header.sh_addr
-        size = header.sh_size
-        is_writable = "yes" if (header.sh_flags % 2 == 1) else "no"
-        end = addr + size - 1 if size != 0 else 0 
-        print(table_header.format(section.name, hex(addr), hex(end), size, is_writable))
-        if is_writable:
-            writable_sections.append(section)
+    # dump sections
+    print("[+]: all sections")
+    sect = Section(elf)
+    sect.dump_all_sections()
 
     print("")
     # all functions
