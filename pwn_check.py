@@ -1,7 +1,7 @@
 from pwn import ELF
 import subprocess
 import re
-from section import Section
+from Section import Section
 from Rppp import Rppp
 
 
