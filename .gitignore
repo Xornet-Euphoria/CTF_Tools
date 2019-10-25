@@ -2,4 +2,5 @@ test
 out
 *.so
 *.txt
+memo.md
 __pycache__
