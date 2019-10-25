@@ -2,6 +2,8 @@ from pwn import ELF
 import subprocess
 import re
 import argparse
+from Functions import Functions
+from Function import Function
 from Section import Section
 from Rppp import Rppp
 
@@ -15,7 +17,7 @@ if __name__ == '__main__':
     # todo: 引数(実行ファイル、libc, 各項目分離)
     #     : 結果のテキストファイルへの保存
     elf = ELF(args.elf)  # _write4
-    libc = ELF(args.libc)
+    libc = ELF(args.libc) if args.libc else None
 
     print("")
     # dump sections
@@ -27,15 +29,9 @@ if __name__ == '__main__':
     # all functions
     # todo: 関数の中身を調べる方法(ローカル変数の数やできるなら初期値も調べたい)
     print("[+]: all functions")
-    functions = elf.functions
-    # Function(name='pwnme', address=0x4007b5, size=0x52, elf=ELF('/mnt/c/share/ctf/Xornet_Tools/_write4'))
-    table_header = "{0:30} : {1:15} ~ {2:15} | {3:10}"
-    print(table_header.format("function name", "start address", "end address", "size"))
-    print("-" * 80)
-
-    for func in functions.values():
-        addr = func.address
-        print(table_header.format(func.name, hex(addr), hex(addr + func.size), func.size))
+    functions = Functions(elf)
+    functions.dump_all_functions()
+    
 
     print("")
     # plt
