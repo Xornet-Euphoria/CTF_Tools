@@ -2,3 +2,4 @@ test
 out
 *.so
 *.txt
+__pycache__
