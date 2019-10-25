@@ -1,15 +1,21 @@
 from pwn import ELF
 import subprocess
 import re
+import argparse
 from Section import Section
 from Rppp import Rppp
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="analyzing binary tool for pwn")
+    parser.add_argument("elf", help="binary path")
+    parser.add_argument("-l", "--libc", help="libc path")
+
+    args = parser.parse_args()
     # todo: 引数(実行ファイル、libc, 各項目分離)
     #     : 結果のテキストファイルへの保存
-    elf = ELF("test")  # _write4
-    libc = ELF("libc.so")
+    elf = ELF(args.elf)  # _write4
+    libc = ELF(args.libc)
 
     print("")
     # dump sections
@@ -56,11 +62,12 @@ if __name__ == '__main__':
     rppp = Rppp(elf)
     rppp.dump_all_gadgets()
     
-    print("")
-    # todo: 結果のパース, オブジェクトとして格納
-    # one-gadget
-    print("[+]: execute one-gadget")
-    one_gadget_command = ["one_gadget", libc.path]
-    res = subprocess.run(one_gadget_command, capture_output=True)
-    out = res.stdout.decode()
-    print(out)
+    if libc:
+        print("")
+        # todo: 結果のパース, オブジェクトとして格納
+        # one-gadget
+        print("[+]: execute one-gadget")
+        one_gadget_command = ["one_gadget", libc.path]
+        res = subprocess.run(one_gadget_command, capture_output=True)
+        out = res.stdout.decode()
+        print(out)
