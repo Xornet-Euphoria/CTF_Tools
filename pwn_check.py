@@ -5,17 +5,6 @@ from Section import Section
 from Rppp import Rppp
 
 
-# function for parsing rp++
-def remove_footer(s):
-    index = len(s) - 1
-    while index > 0:
-        if s[index] == ";":
-            return s[0:index]
-        index -= 1
-
-    return ""
-
-
 if __name__ == '__main__':
     # todo: 引数(実行ファイル、libc, 各項目分離)
     #     : 結果のテキストファイルへの保存
