@@ -17,7 +17,7 @@ if __name__ == '__main__':
     
     # under construction
     # 目標はradare2の劣化版みたいな解析機能
-    parser.add_argument("--detail", help="analyze binary for detail information", action="store_true")
+    parser.add_argument("--detail", help="analyze binary for detail information (but not implemented now... sorry)", action="store_true")
 
     args = parser.parse_args()
     # todo: 引数(実行ファイル)
