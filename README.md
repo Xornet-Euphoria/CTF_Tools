@@ -6,5 +6,21 @@ pwnで使いそうなコマンドを一度に実行するツールです。check
 - usage: `./pwn_check.sh <binary>` or `./pwn_check.sh <binary> <libc>`(libcからone-gadgetを検索します)
 
 ### pwnalyxer.py
-↑のPython版。後発だったがこっちの方が機能が多いし今後もこちらを中心に開発をしていく予定。現時点で引数やオプションについて未実装なので存在だけを示しています。
-- usage(予定): `python pwn_check.py <options> <binary>`
+↑のPython版。Pwntoolsとrp++, one-gadgetが必要。  
+後発だったがこっちの方が機能が多いし今後もこちらを中心に開発をしていく予定。
+- usage:
+```
+usage: pwnalyxer.py [-h] [-l LIBC] [-s] [--disas DISAS] [--detail] elf
+
+analyzing binary tool for pwn
+
+positional arguments:
+  elf                   binary path
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -l LIBC, --libc LIBC  libc path
+  -s, --simple          only show infomation of section and symbols (not include gadgets and ignore libc)
+  --disas DISAS         disassemble specified function by name (in current version, function only)
+  --detail              analyze binary for detail information
+  ```
