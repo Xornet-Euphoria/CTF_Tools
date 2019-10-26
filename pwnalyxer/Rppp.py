@@ -59,7 +59,7 @@ class Rppp:
     def dump_gadgets(self, gadgets):
         self.__make_table_header()
         for gadget in gadgets:
-            print(self.__dump_table_format.format(hex(gadget.addr), gadget.mnemonic))
+            print(self.__dump_table_format.format(hex(gadget.addr), gadget.raw_mnemonic))
 
 
     def dump_all_gadgets(self):

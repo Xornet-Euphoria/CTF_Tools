@@ -1,5 +1,5 @@
 class Mnemonic:
-    def __init__(self, offset, mnemonic):
-        self.offset = offset
+    def __init__(self, addr, mnemonic):
+        self.addr = addr
         self.raw = mnemonic
         self.argument = []

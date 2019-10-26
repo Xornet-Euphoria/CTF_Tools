@@ -21,7 +21,7 @@ class Function:
             re_obj = re.match(r"[0-9a-f]+:", raw_m)
             offset = int(re_obj.group()[:-1], 16)
             m_and_arg = raw_m[re_obj.end():].strip()
-            mnemonic = Mnemonic(offset, m_and_arg)
+            mnemonic = Mnemonic(self.addr + offset, m_and_arg)
             self.mnemonics.append(mnemonic)
 
 
