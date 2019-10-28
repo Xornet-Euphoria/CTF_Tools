@@ -13,15 +13,16 @@ if __name__ == '__main__':
     parser.add_argument("elf", help="binary path")
     parser.add_argument("-l", "--libc", help="libc path")
     parser.add_argument("-s", "--simple", help="only show infomation of section and symbols (not include gadgets and ignore libc)", action="store_true")
-    parser.add_argument("--symbol", help="show specified information of symbol such as symbol@plt, symbol@got and symbol@libc (-l option is required)")
+    parser.add_argument("--symbol", nargs="*", help="show specified information of symbol such as symbol@plt, symbol@got and symbol@libc (-l option is required)")
     
     # under construction
     # 目標はradare2の劣化版みたいな解析機能
     parser.add_argument("--detail", help="analyze binary for detail information (but not implemented now... sorry)", action="store_true")
 
     args = parser.parse_args()
-    # todo: 引数(実行ファイル)
-    #     : 結果のテキストファイルへの保存 -> リダイレクトで流せばよくない?
+
+    # analyze binary
+    # todo: 不要な解析を無視
     elf = ELF(args.elf)  # _write4
     libc = ELF(args.libc) if args.libc else None
 
