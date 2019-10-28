@@ -13,7 +13,8 @@ if __name__ == '__main__':
     parser.add_argument("elf", help="binary path")
     parser.add_argument("-l", "--libc", help="libc path")
     parser.add_argument("-s", "--simple", help="only show infomation of section and symbols (not include gadgets and ignore libc)", action="store_true")
-    parser.add_argument("--symbol", nargs="*", help="show specified information of symbol such as symbol@plt, symbol@got and symbol@libc (-l option is required)")
+    parser.add_argument("--symbols", nargs="*",
+                        help="show nformation of symbols such as symbol@plt, symbol@got and symbol@libc (-l option is required). This option can get multi arguments.")
     
     # under construction
     # 目標はradare2の劣化版みたいな解析機能
@@ -32,7 +33,7 @@ if __name__ == '__main__':
     got = elf.got
 
     # dump simple
-    if not args.symbol:
+    if not args.symbols:
         print("")
         # dump sections
         print("[+]: all sections")
@@ -60,31 +61,31 @@ if __name__ == '__main__':
         print("-" * 50)
         for g in got.items():
             print(table_header.format(g[0], hex(g[1])))
-    elif args.symbol:
-        symbol = args.symbol
-        # python 3.8 is required
-        if f := functions.search_function_by_name(symbol):
-            print("")
-            functions.dump_functions([f])
-            print("")
-            print("[+]: disassenble function `{}`".format(symbol))
-            f.dump_disas()
-
-        elif symbol in plt and symbol in got:
+    elif args.symbols:
+        # todo: sort type (functions or other symbols)
+        #     : symbol class
+        for symbol in args.symbols:
             print("")
             print("[+]: informations about symbol `{}`".format(symbol))
-            symbol_name_len = len(symbol)
-            table_header = "{0:15}: {1:30}"
-            print(table_header.format("name@place", "address"))
-            print("-" * 50)
-            print(table_header.format(symbol + "@plt", hex(plt[symbol])))
-            print(table_header.format(symbol + "@got", hex(got[symbol])))
+            # python 3.8 is required
+            if f := functions.search_function_by_name(symbol):
+                print("")
+                functions.dump_functions([f])
+                print("")
+                print("[+]: disassenble function `{}`".format(symbol))
+                f.dump_disas()
+
+            elif symbol in plt and symbol in got:
+                table_header = "{0:15}: {1:30}"
+                print(table_header.format("name@place", "address"))
+                print("-" * 50)
+                print(table_header.format(symbol + "@plt", hex(plt[symbol])))
+                print(table_header.format(symbol + "@got", hex(got[symbol])))
             
-            if libc and symbol in libc.symbols:
-                print(table_header.format(symbol + "@libc", hex(libc.symbols[symbol])))
-                pass
-        else:
-            print("[+]: symbol `{}` is not function and in libc.".format(symbol))
+                if libc and symbol in libc.symbols:
+                    print(table_header.format(symbol + "@libc", hex(libc.symbols[symbol])))
+            else:
+                print("[+]: symbol `{}` is not function and in libc.".format(symbol))
 
         exit(0)
 
