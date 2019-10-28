@@ -13,7 +13,7 @@ if __name__ == '__main__':
     parser.add_argument("elf", help="binary path")
     parser.add_argument("-l", "--libc", help="libc path")
     parser.add_argument("-s", "--simple", help="only show infomation of section and symbols (not include gadgets and ignore libc)", action="store_true")
-    parser.add_argument("--disas", help="disassemble specified function by name (in current version, function only)")
+    parser.add_argument("--symbol", help="show specified information of symbol such as symbol@plt, symbol@got and symbol@libc (-l option is required)")
     
     # under construction
     # 目標はradare2の劣化版みたいな解析機能
@@ -31,7 +31,7 @@ if __name__ == '__main__':
     got = elf.got
 
     # dump simple
-    if not args.disas:
+    if not args.symbol:
         print("")
         # dump sections
         print("[+]: all sections")
@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
         print("")
         # all functions
-        # todo: 関数の中身を調べる方法(ローカル変数の数やできるなら初期値も調   べたい)
+        # todo: 関数の中身を調べる方法(ローカル変数の数やできるなら初期値も調べたい)
         print("[+]: all functions")
         functions.dump_all_functions()
 
@@ -59,18 +59,32 @@ if __name__ == '__main__':
         print("-" * 50)
         for g in got.items():
             print(table_header.format(g[0], hex(g[1])))
-    
-    elif args.disas:
-        target = args.disas
-        print("")
-        target_f = functions.search_function_by_name(target)
-        if target_f:
-            print("[+]: disassenble function `{}`".format(target))
-            target_f.dump_disas()
+    elif args.symbol:
+        symbol = args.symbol
+        # python 3.8 is required
+        if f := functions.search_function_by_name(symbol):
+            print("")
+            functions.dump_functions([f])
+            print("")
+            print("[+]: disassenble function `{}`".format(symbol))
+            f.dump_disas()
+
+        elif symbol in plt and symbol in got:
+            print("")
+            print("[+]: informations about symbol `{}`".format(symbol))
+            symbol_name_len = len(symbol)
+            table_header = "{0:15}: {1:30}"
+            print(table_header.format("name@place", "address"))
+            print("-" * 50)
+            print(table_header.format(symbol + "@plt", hex(plt[symbol])))
+            print(table_header.format(symbol + "@got", hex(got[symbol])))
+            
+            if libc and symbol in libc.symbols:
+                print(table_header.format(symbol + "@libc", hex(libc.symbols[symbol])))
+                pass
         else:
-            print("[+]: the function `{}` is not found. Please check function name.".format(target))
-            print("[+]: all functions are here.")
-            functions.dump_all_functions()
+            print("[+]: symbol `{}` is not function and in libc.".format(symbol))
+
         exit(0)
 
     if args.simple:
