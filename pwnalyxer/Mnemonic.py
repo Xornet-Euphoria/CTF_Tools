@@ -1,3 +1,6 @@
+import re
+
+
 class Mnemonic:
     def __init__(self, addr, raw_mnemonic, detail=False):
         self.addr = addr
@@ -10,7 +13,7 @@ class Mnemonic:
 
         if self.parsed:
             # extract comment
-            self.comment = self.get_comment()
+            # self.comment = self.get_comment()
             self.__remove_comment()
             self.opecode = self.__get_opecode()
             self.raw_operands = self.__get_operands()
@@ -52,7 +55,11 @@ class Mnemonic:
     def __get_operands(self):
         raw = self.raw
         if self.opecode:
-            return raw.replace(self.opecode, "").strip().split(", ")
+            ret = raw.replace(self.opecode, "").strip().split(", ")
+            if ret != ['']:
+                return ret
+            else:
+                return []
 
         return []
 
@@ -70,5 +77,9 @@ class Mnemonic:
                                "little", signed=True)
                 analyzed_operand["value"] = num
                 self.raw_operands[i] += " (= {})".format(num)
+            elif obj := re.search(r'\[.+\]', operand):
+                analyzed_operand["type"] = "address"
+                # todo: 式の解析
+                expression = operand[obj.start() + 1:obj.end() - 1]
             
             self.operands.append(analyzed_operand)

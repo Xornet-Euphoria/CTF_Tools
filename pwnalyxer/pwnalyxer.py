@@ -18,7 +18,7 @@ if __name__ == '__main__':
     
     # under construction
     # 目標はradare2の劣化版みたいな解析機能
-    parser.add_argument("--detail", help="analyze binary for detail information (but not implemented now... sorry)", action="store_true")
+    parser.add_argument("--detail", help="analyze binary for detail information", action="store_true")
 
     args = parser.parse_args()
 
@@ -72,7 +72,7 @@ if __name__ == '__main__':
                 print("")
                 functions.dump_functions([f])
                 print("")
-                print("[+]: disassenble function `{}`".format(symbol))
+                print("[+]: disassemble function `{}`".format(symbol))
                 print("{0:15}: {1:8} {2}".format("address", "opecode", "operands & comment"))
                 print("-" * 60)
                 f.dump_disas(args.detail)

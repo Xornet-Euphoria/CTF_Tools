@@ -31,11 +31,20 @@ class Function:
             for m in self.mnemonics:
                 operands = m.raw_operands
                 s_operands = ""
+                s_types = ""
                 for op in operands:
                     if s_operands != "":
                         s_operands += ", "
                     s_operands += op
-                print("{0:15}: {1:8} {2}  {3}".format(hex(m.addr), m.opecode, s_operands, m.comment))
+
+                if len(m.operands) != 0:
+                    s_types = "# types: "
+                    for i, op in enumerate(m.operands):
+                        if i != 0:
+                            s_types += ", "
+                        s_types += op["type"]
+                
+                print("{0:15}: {1:8} {2:30}  {3:15} {4}".format(hex(m.addr), m.opecode, s_operands, s_types, m.comment))
         else:
             print(disasm(self.elf.read(self.addr, self.size),
                                arch=self.elf.arch))
