@@ -65,6 +65,12 @@ class Mnemonic:
 
 
     def __analyze_operands(self):
+        register_dic = {
+            64: ["rax", "rdi", "rsi", "rdx", "rcx", "rbp", "rsp", "rbx", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"],
+            32: ["eax", "edi", "esi", "edx", "ecx", "ebp", "esp", "ebx", "r8d", "r9d", "r10d", "r11d", "r12d", "r13d", "r14d", "r15d"],
+            16: ["ax", "di", "si", "dx", "cx", "bp", "sp", "bx", "r8w", "r9w", "r10w", "r11w", "r12w", "r13w", "r14w", "r15w"],
+            8: ["al", "dil", "sil", "dl", "cl", "bpl", "spl", "bl", "r8b", "r9b", "r10b", "r11b", "r12b", "r13b", "r14b", "r15b"]
+        }
         for i, operand in enumerate(self.raw_operands):
             analyzed_operand = {
                 "type": "unknown",  # num, addr, register and etc...
@@ -81,5 +87,14 @@ class Mnemonic:
                 analyzed_operand["type"] = "address"
                 # todo: 式の解析
                 expression = operand[obj.start() + 1:obj.end() - 1]
+            else:
+                for bits, registers in register_dic.items():
+                    for register in registers:
+                        if operand == register:
+                            analyzed_operand["type"] = "{}bit register".format(bits)
+                            break
+                    else:
+                        continue
+                    break
             
             self.operands.append(analyzed_operand)
