@@ -73,7 +73,7 @@ if __name__ == '__main__':
                 functions.dump_functions([f])
                 print("")
                 print("[+]: disassenble function `{}`".format(symbol))
-                print("{0:15}: {1:8} {2} {3}".format("address", "opecode", "operands", "comment"))
+                print("{0:15}: {1:8} {2}".format("address", "opecode", "operands & comment"))
                 print("-" * 60)
                 f.dump_disas(args.detail)
 

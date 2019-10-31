@@ -29,7 +29,7 @@ class Function:
         if detail:
             self.parse_mnemonics(detail)
             for m in self.mnemonics:
-                operands = m.operands
+                operands = m.raw_operands
                 s_operands = ""
                 for op in operands:
                     if s_operands != "":
