@@ -28,16 +28,16 @@ optional arguments:
   ```
 
 ### example
-- `python pwnalyxer.py <elf>`:  
+- `python pwnalyxer.py <elf>`  
 セクション, plt, got, 関数, ROP Gadgetの情報を表示します。  
-- `python pwnalyxer.py <elf> -l <libc>`
+- `python pwnalyxer.py <elf> -l <libc>`  
 ↑の情報に加えて存在するならlibc内のOne Gadgetを表示します。  
-- `python pwnalyxer.py <elf> -s`:  
+- `python pwnalyxer.py <elf> -s`  
 ↑の結果からROP GadgetとOne Gadgetを除いた結果を表示します。libcオプションは無視されます。  
-- `python pwnalyxer.py <elf> --symbol <func_name>`:  
+- `python pwnalyxer.py <elf> --symbol <func_name>`  
 指定したシンボルの情報を表示します。pltまたはgotに存在するシンボルは両方の位置を表示します。libcオプションが指定されている場合その位置も検索して表示します。  
 関数に関しては位置に加えて逆アセンブルを表示します。下記のようにdetailオプションを指定すると詳しい解析を行います。    
-- `python pwnalyxer.py <elf> --symbol <func_name1> <func_name2> ...`
+- `python pwnalyxer.py <elf> --symbol <func_name1> <func_name2> ...`  
 ↑の結果を複数のシンボルに関して出力します。但し、シンボルの種類でソートしていません、これは近いうちに実装する予定です。  
 - `python pwnalyxer.py <elf> --symbol <func_name1> --detail`  
 現在開発中の機能です。関数の逆アセンブル結果を解析し様々な情報を表示します。現在存在するのは次のような情報です。  
