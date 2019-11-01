@@ -43,4 +43,6 @@ optional arguments:
 現在開発中の機能です。関数の逆アセンブル結果を解析し様々な情報を表示します。現在存在するのは次のような情報です。  
   1. 引数の種類の表示  
   2. 数値引数の10進数表示  
-  (例: `sub      rsp, 0x20 (= 32)                # types: 64bit register, num `)
+  3. callした時に飛ぶアドレスを絶対表示  
+  (例1: `sub      rsp, 0x20 (= 32)                # types: 64bit register, num `)  
+  (例2: `call     0x400630                        # types: address`)
