@@ -73,8 +73,7 @@ if __name__ == '__main__':
                 functions.dump_functions([f])
                 print("")
                 print("[+]: disassemble function `{}`".format(symbol))
-                print("{0:15}: {1:8} {2}".format("address", "opecode", "operands & comment"))
-                print("-" * 60)
+                
                 f.dump_disas(args.detail)
 
             elif symbol in plt and symbol in got:

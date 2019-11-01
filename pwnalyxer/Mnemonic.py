@@ -1,8 +1,10 @@
+from pwn import ELF
 import re
 
 
 class Mnemonic:
-    def __init__(self, addr, raw_mnemonic, detail=False):
+    def __init__(self, elf, addr, raw_mnemonic, detail=False, byte_list=None):
+        self.elf = elf
         self.addr = addr
         self.raw = raw_mnemonic
         self.opecode = None
@@ -10,6 +12,7 @@ class Mnemonic:
         self.operands = []
         self.parsed = detail
         self.comment = ""
+        self.byte_list = byte_list
 
         if self.parsed:
             # extract comment
@@ -18,7 +21,7 @@ class Mnemonic:
             self.opecode = self.__get_opecode()
             self.raw_operands = self.__get_operands()
             self.__analyze_operands()
-
+            self.__analyze_opecode()
 
     def __get_comment_index(self):
         l = len(self.raw)
@@ -98,3 +101,22 @@ class Mnemonic:
                     break
             
             self.operands.append(analyzed_operand)
+
+    def __analyze_opecode(self):
+        if self.opecode == "call":
+            # todo: エラー処理
+            byte_list = self.byte_list[1:]
+            byte_num = len(byte_list)
+            s_num = "0x"
+            for b in reversed(byte_list):
+                s_b = hex(b)[2:]
+                if len(s_b) == 1:
+                    s_b = "0" + s_b
+                s_num += s_b
+            num = int(s_num, 16)
+            num = int.from_bytes((num).to_bytes(byte_num, "little"),
+                                 "little", signed=True)
+            call_addr = self.addr + len(self.byte_list) + num
+            self.operands[0]["type"] = "address"
+            self.operands[0]["value"] = call_addr
+            self.raw_operands[0] = hex(call_addr)
