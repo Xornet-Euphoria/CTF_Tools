@@ -11,6 +11,7 @@ class Function:
         self.name = f.name
         self.size = f.size
         self.mnemonics = []
+        self.call_addresses = []
 
 
     def parse_mnemonics(self, detail=False):
@@ -28,13 +29,41 @@ class Function:
             mnemonic = Mnemonic(self.addr + offset, m, detail, byte_list=m_bytes)
             self.mnemonics.append(mnemonic)
 
+    
+    def analyze_function(self):
+        # ニーモニック解析
+        self.parse_mnemonics(True)
+        # 関数内解析
+        # シンボル辞書逆転
+        func_addr_dict = {v.address: k for k, v in self.elf.functions.items()}
+        plt_addr_dict = {v: k for k, v in self.elf.plt.items()}
+
+        # 自身が呼ぶシンボル一覧
+        for m in self.mnemonics:
+            if m.opecode == "call":
+                called_addr = m.operands[0]["value"]
+                self.call_addresses.append(called_addr)
+                if called_addr in func_addr_dict:
+                    symbol_name = func_addr_dict[called_addr]
+                elif called_addr in plt_addr_dict:
+                    symbol_name = "{}@plt".format(plt_addr_dict[called_addr])
+                else:
+                    symbol_name = "unknown"
+
+                m.raw_operands[0] += " ({})".format(symbol_name)
+
+
+        # todo: ローカル変数検出
+
 
     def dump_disas(self, detail=False):
         if detail:
             print("{0:15}: {1:8} {2}".format(
                 "address", "opecode", "operands & comment"))
             print("-" * 60)
-            self.parse_mnemonics(detail)
+            self.analyze_function()
+
+            # dump
             for m in self.mnemonics:
                 operands = m.raw_operands
                 s_operands = ""
