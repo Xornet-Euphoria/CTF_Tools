@@ -3,8 +3,7 @@ import re
 
 
 class Mnemonic:
-    def __init__(self, elf, addr, raw_mnemonic, detail=False, byte_list=None):
-        self.elf = elf
+    def __init__(self, addr, raw_mnemonic, detail=False, byte_list=None):
         self.addr = addr
         self.raw = raw_mnemonic
         self.opecode = None

@@ -25,7 +25,7 @@ class Function:
             s_bytes = re_obj.group().strip().split(" ")
             m_bytes = list(map(lambda x: int(x, 16), s_bytes))
             m = bytes_and_m[re_obj.end():].strip()
-            mnemonic = Mnemonic(self.elf, self.addr + offset, m, detail, byte_list=m_bytes)
+            mnemonic = Mnemonic(self.addr + offset, m, detail, byte_list=m_bytes)
             self.mnemonics.append(mnemonic)
 
 
