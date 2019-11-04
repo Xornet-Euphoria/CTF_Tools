@@ -46,3 +46,9 @@ optional arguments:
   3. callした時に飛ぶアドレスを絶対表示  
   (例1: `sub      rsp, 0x20 (= 32)                # types: 64bit register, num `)  
   (例2: `call     0x400630                        # types: address`)
+
+## ALA-POD
+Assembly Language Analyzer with Parsing Objdumpの略  
+
+pwnalyxer.py開発にあたってpwntoolsを利用していたのですが色々と問題が生じた(あるいは生じそう)なので関数シンボル解析部分だけを独立して開発することにしました。現時点で何も出来ていません。  
+当面はpwnalyxer.pyの--detailオプションで実装した機能の実装を目指します。
