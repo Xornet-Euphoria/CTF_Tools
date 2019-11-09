@@ -11,10 +11,14 @@ class Alapod:
             raise ValueError
 
         # formats
-        self.__dump_table_format = "{0:30} : {1:15} ~ {2:15} | {3:10} | {4:10}"
+        self.__dump_sections_format = "{0:30} : {1:15} ~ {2:15} | {3:10} | {4:10}"
+        self.__dump_functions_format = "{0:30} : {1:15} ~ {2:15} | {3:10}"
 
         self.elf_path = elf_path
         self.elf = ELFFile(open(self.elf_path, "rb"))
+
+        self.functions_addr_dic = dict()
+        self.functions_name_dic = dict()
         
         """
         self.plt_addr_dic = dict()
@@ -37,17 +41,19 @@ class Alapod:
             size = header.sh_size
             is_writable = "yes" if (header.sh_flags % 2 == 1) else "no"
             end = addr + size - 1 if size != 0 else 0
-            print(self.__dump_table_format.format(sct.name, hex(
+            print(self.__dump_sections_format.format(sct.name, hex(
                 addr), hex(end), size, is_writable))
 
 
-    def dump_symbols(self):
-        sym_table = self.elf.get_section_by_name(".symtab")
-        if not sym_table:
-            raise ValueError
-        for sym in sym_table.iter_symbols():
-            entry = sym.entry
-            print(sym.name)
+    def dump_functions(self):
+        if len(self.functions_addr_dic) == 0:
+            self.__parse_functions()
+        for name in self.functions_name_dic.keys():
+            entry = self.functions_name_dic[name].entry
+            addr = entry.st_value
+            size = entry.st_size
+            if size > 0:
+                print(self.__dump_functions_format.format(name, hex(addr), hex(addr + size - 1), size))
 
 
     def dump_dynamic(self):
@@ -57,6 +63,17 @@ class Alapod:
         
         for tag in dyn.iter_tags():
             print(tag)
+
+
+    def __parse_functions(self):
+        sym_table = self.elf.get_section_by_name(".symtab")
+        if not sym_table:
+            raise ValueError
+        for sym in sym_table.iter_symbols():
+            entry = sym.entry
+            if entry.st_info.type == "STT_FUNC" and entry.st_value != 0:
+                self.functions_addr_dic[entry.st_value] = sym
+                self.functions_name_dic[sym.name] = sym
 
 
     def __parse_plt(self):
@@ -107,9 +124,9 @@ class Alapod:
 
 if __name__ == '__main__':
     alpd = Alapod("./test")
-    alpd.dump_sections()
-    alpd.dump_symbols()
-    alpd.dump_dynamic()
+    # alpd.dump_sections()
+    alpd.dump_functions()
+    # alpd.dump_dynamic()
     # print(alpd.plt_addr_dic)
     # print(alpd.plt_name_dic)
     # print(alpd.text_addr_dic)
