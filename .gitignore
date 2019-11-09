@@ -4,3 +4,4 @@ out
 *.txt
 memo.md
 __pycache__
+.gdb_history
