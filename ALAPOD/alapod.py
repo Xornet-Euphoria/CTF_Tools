@@ -3,6 +3,7 @@ import os
 import subprocess
 from elftools.elf.elffile import ELFFile
 from elftools.elf.sections import Section, Symbol, SymbolTableSection
+from capstone import *
 
 
 class Alapod:
@@ -13,6 +14,7 @@ class Alapod:
         # formats
         self.__dump_sections_format = "{0:30} : {1:15} ~ {2:15} | {3:10} | {4:10}"
         self.__dump_functions_format = "{0:30} : {1:15} ~ {2:15} | {3:10}"
+        self.__disas_function_format = "{0:15}: {1:8} {2:30}"
 
         self.elf_path = elf_path
         self.elf = ELFFile(open(self.elf_path, "rb"))
@@ -63,6 +65,21 @@ class Alapod:
         
         for tag in dyn.iter_tags():
             print(tag)
+
+
+    def disas_function(self, name):
+        if len(self.functions_name_dic) == 0:
+            self.__parse_functions()
+        all_txt = self.elf.get_section_by_name(".text")
+        base_addr = all_txt["sh_addr"]
+        sct = self.functions_name_dic[name]
+        if sct == None:
+            return
+        offset = sct["st_value"] - base_addr
+        func_txt = all_txt.data()[offset:offset + sct["st_size"]]
+        md = Cs(CS_ARCH_X86, CS_MODE_64)
+        for mnemonic in md.disasm(func_txt, sct["st_value"]):
+            print(self.__disas_function_format.format(hex(mnemonic.address), mnemonic.mnemonic, mnemonic.op_str))
 
 
     def __parse_functions(self):
@@ -125,7 +142,8 @@ class Alapod:
 if __name__ == '__main__':
     alpd = Alapod("./test")
     # alpd.dump_sections()
-    alpd.dump_functions()
+    # alpd.dump_functions()
+    alpd.disas_function("pwnme")
     # alpd.dump_dynamic()
     # print(alpd.plt_addr_dic)
     # print(alpd.plt_name_dic)
