@@ -1,9 +1,10 @@
 import re
 import os
+from functools import reduce
 import subprocess
 from elftools.elf.elffile import ELFFile
 from elftools.elf.sections import Section, Symbol, SymbolTableSection
-from capstone import *
+from capstone import Cs, CS_ARCH_X86, CS_MODE_64
 
 
 class Alapod:
@@ -76,8 +77,27 @@ class Alapod:
         offset = sct["st_value"] - base_addr
         func_txt = all_txt.data()[offset:offset + sct["st_size"]]
         md = Cs(CS_ARCH_X86, CS_MODE_64)
+        md.detail = True
         for mnemonic in md.disasm(func_txt, sct["st_value"]):
             print(self.__disas_function_format.format(hex(mnemonic.address), mnemonic.mnemonic, mnemonic.op_str))
+            regs = mnemonic.regs_access()
+            read_regs = regs[0]
+            write_regs = regs[1]
+            
+            if len(read_regs) > 1:
+                print("\tRead registers: {}".format(reduce(lambda r1, r2: mnemonic.reg_name(r1) + ", " + mnemonic.reg_name(r2), read_regs)))
+            elif len(read_regs) == 1:
+                print("\tRead registers: {}".format(mnemonic.reg_name(read_regs[0])))
+            if len(write_regs) > 1:
+                print("\tWrite registers: {}".format(reduce(
+                lambda r1, r2: mnemonic.reg_name(r1) + ", " + mnemonic.reg_name(r2), write_regs)))
+            elif len(write_regs) == 1:
+                print("\tWrite registers: {}".format(mnemonic.reg_name(write_regs[0])))
+
+            """
+            for op in mnemonic.operands:
+                print(op.type)
+            """
 
 
     def __parse_functions(self):
