@@ -21,11 +21,13 @@ class Alapod:
 
         self.functions_addr_dic = dict()
         self.functions_name_dic = dict()
-        
+
+        self.plt_got_dic = dict()
+        self.got_plt_dic = dict()
+
         """
         self.plt_addr_dic = dict()
         self.plt_name_dic = dict()
-        self.__parse_plt()
         """
 
 
@@ -91,27 +93,35 @@ class Alapod:
 
     def __parse_plt(self):
         # parsing .plt section
-        command = ["objdump", "-M", "intel", "-j", ".plt", "-d", self.elf_path]
-        res = subprocess.run(command, capture_output=True)
-        out = res.stdout.decode()
-        out_lines = out.split("\n")
-        for line in out_lines:
-            if re.match(r"[0-9a-f]+ <.+plt>", line):
-                parsed_line = line.split(" ")
-                addr = int(parsed_line[0], 16)
-                name = parsed_line[1]
-                black_list = ["<", "@", "plt>:"]
-                for b_s in black_list:
-                    name = name.replace(b_s, "")
-                self.plt_addr_dic[addr] = name
-                self.plt_name_dic[name] = addr
+        plt_sct = self.elf.get_section_by_name(".plt")
+        if plt_sct is None:
+            raise ValueError
+        md = Cs(CS_ARCH_X86, CS_MODE_64)
+        md.detail = True
+        mnemonics = md.disasm(plt_sct.data(), plt_sct["sh_addr"])
+        cnt = 0
+        for mnemonic in mnemonics:
+            if cnt % 3 == 0 and cnt != 0:
+                rip = mnemonic.address + mnemonic.size
+                assert len(mnemonic.operands) == 1
+                rip_plus = mnemonic.operands[0].value.mem.disp
+                self.plt_got_dic[mnemonic.address] = rip + rip_plus
+                self.got_plt_dic[rip + rip_plus] = mnemonic.address
+            cnt += 1
+
+
+    def dump_plt(self):
+        self.__parse_plt()
+        for key, item in self.plt_got_dic.items():
+            print("{}: {}".format(hex(key), hex(item)))
 
 
 if __name__ == '__main__':
     alpd = Alapod("./test")
     # alpd.dump_sections()
     # alpd.dump_functions()
-    alpd.disas_function("pwnme")
+    # alpd.disas_function("pwnme")
+    alpd.dump_plt()
     # alpd.dump_dynamic()
     # print(alpd.plt_addr_dic)
     # print(alpd.plt_name_dic)
