@@ -52,3 +52,20 @@ Assembly Language Analyzer with Parsing Objdumpの略
 
 pwnalyxer.py開発にあたってpwntoolsを利用していたのですが色々と問題が生じた(あるいは生じそう)なので関数シンボル解析部分だけを独立して開発することにしました。現時点で何も出来ていません。  
 当面はpwnalyxer.pyの--detailオプションで実装した機能の実装を目指します。
+
+## pwnmech
+
+軽微なpwn用支援関数が定義されているpythonコード、名前の由来はSTARWARSのアストロメク・ドロイドの通称がMechであることから。
+
+### 機能
+
+- check_payload:
+ペイロードと入力先の関数(`gets`等)を引数として渡すと入力が中断しないかどうかを確認してくれる関数。ついでに長さチェックもしてくれる
+
+## 制作予定
+
+- pwn_snippet(仮):
+事前にpwn用のスニペットを生成してくれる、pwnmechをimportする
+
+- ROP Categorizer(仮):
+ROP Gadgetの分類をする、pwn_snippetでimportされるためのpythonファイルを生成する予定
