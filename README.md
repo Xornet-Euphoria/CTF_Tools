@@ -8,7 +8,7 @@ pwnで使いそうなコマンドを一度に実行するツールです。check
 
 ## pwnalyxer.py
 ↑のPython版です。Pwntoolsとrp++, one-gadgetが必要が必要です。  
-後発ツールでしたが様々な機能を盛り込み
+
 ### usage
 ```
 usage: pwnalyxer.py [-h] [-l LIBC] [-s] [--symbols [SYMBOLS [SYMBOLS ...]]] [--detail] elf
@@ -59,13 +59,16 @@ pwnalyxer.py開発にあたってpwntoolsを利用していたのですが色々
 
 ### 機能
 
-- check_payload:
+- pwnmech.check_payload():  
 ペイロードと入力先の関数(`gets`等)を引数として渡すと入力が中断しないかどうかを確認してくれる関数。ついでに長さチェックもしてくれる
+
+- pwnconst.py:  
+pwnで使いそうな定数等、タイプ数は多くなるかもしれないが調べなくてもわかるように定義
 
 ## 制作予定
 
-- pwn_snippet(仮):
+- pwn_snippet(仮):  
 事前にpwn用のスニペットを生成してくれる、pwnmechをimportする
 
-- ROP Categorizer(仮):
+- ROP Categorizer(仮):  
 ROP Gadgetの分類をする、pwn_snippetでimportされるためのpythonファイルを生成する予定
