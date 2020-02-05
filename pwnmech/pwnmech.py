@@ -65,18 +65,20 @@ def push_string(s, x64=False):
     pushs = split_string(s, x64)
 
     for operand in pushs:
-        mnemonic = push_without_null(str_to_long(operand))
+        mnemonic = ope_without_null("push", str_to_long(operand))
         shellcode += mnemonic
 
     return shellcode
 
 
-def push_without_null(num, reg="rax", x64=False):
+def ope_without_null(ope, num, reg="rax", x64=False):
+    if ope != "mov" and ope != "push":
+        raise ValueError
     f = p64 if x64 else p32
     packed_num = f(num)
 
     if b"\x00" not in packed_num:
-        return "push 0x%x\n" % (num)
+        return "%s 0x%x\n" % (ope, num)
 
     # mov <reg>, <non zero num1>; xor <reg>, <non zero num2>; push <reg>
     bytes1 = b""
@@ -93,6 +95,8 @@ def push_without_null(num, reg="rax", x64=False):
                 
     shellcode = "mov %s, 0x%x\n" % (reg, int(hexlify(bytes1), 16))
     shellcode += "xor %s, 0x%x\n" % (reg, int(hexlify(bytes2), 16))
-    shellcode += "push %s\n" % reg
+    
+    if ope == "push":
+        shellcode += "push %s\n" % reg
 
     return shellcode
