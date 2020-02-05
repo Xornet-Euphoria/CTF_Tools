@@ -84,7 +84,7 @@ def ope_without_null(ope, num, reg="rax", x64=False):
     bytes1 = b""
     bytes2 = b""
 
-    for b in packed_num:
+    for b in packed_num[::-1]:
         for b1 in range(1, 256):
             b2 = b ^ b1
             if b2 != 0:
