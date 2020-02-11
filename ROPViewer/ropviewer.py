@@ -40,7 +40,7 @@ class RopViewer:
 
         for hd in self.dumper.data:
             if self.__in_text(hd.value):
-                print(fmt_rop.format(hd.addr, hd.dump_string, hd.value, self.__str_mnemonic(self.mnemonics[hd.value])))
+                print(fmt_rop.format(hd.addr, hd.dump_string, hd.value, self.__get_full_gadget(self.mnemonics[hd.value])))
             else:
                 print(fmt_not_rop.format(hd.addr, hd.dump_string, hd.value))
 
@@ -57,3 +57,20 @@ class RopViewer:
         s += mnemonic.op_str
 
         return s
+
+
+    def __get_next_mnemonic_addr(self, mnemonic):
+        return mnemonic.address + mnemonic.size
+
+    
+    def __get_full_gadget(self, mnemonic):
+        ret = ""
+        end_mnemonics = ["ret", "jmp", "call"]
+
+        while True:
+            ret += self.__str_mnemonic(mnemonic)
+            if mnemonic.mnemonic in end_mnemonics:
+                return ret[:-1]
+            ret += " -> "
+            next_addr = self.__get_next_mnemonic_addr(mnemonic)
+            mnemonic = self.mnemonics[next_addr]
