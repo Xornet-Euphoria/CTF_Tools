@@ -22,6 +22,7 @@ class RopViewer:
             exit()
 
         self.dumper = HexDumper(self.payload, self.elf.bits // 8)
+        self._external_dict = {}
 
         mode = CS_MODE_64 if self.elf.bits == 64 else CS_MODE_32
         md = Cs(CS_ARCH_X86, mode)
@@ -29,6 +30,23 @@ class RopViewer:
 
         for mnemonic in md.disasm(self.text.data(), self.text.header.sh_addr):
             self.mnemonics[mnemonic.address] = mnemonic
+
+
+    @property
+    def external_dict(self):
+        pass
+
+    @external_dict.setter
+    def external_dict(self, d):
+        self._external_dict = d
+
+
+    def add_dict(self, key, value):
+        self._external_dict[key] = value
+
+
+    def merge_dict(self, d):
+        self._external_dict.update(d)
 
 
     def dump(self):
@@ -41,6 +59,8 @@ class RopViewer:
         for hd in self.dumper.data:
             if self.__in_text(hd.value):
                 print(fmt_rop.format(hd.addr, hd.dump_string, hd.value, self.__get_full_gadget(self.mnemonics[hd.value])))
+            elif hd.value in self._external_dict.keys():
+                print(fmt_rop.format(hd.addr, hd.dump_string, hd.value, self._external_dict[hd.value]))
             else:
                 print(fmt_not_rop.format(hd.addr, hd.dump_string, hd.value))
 
