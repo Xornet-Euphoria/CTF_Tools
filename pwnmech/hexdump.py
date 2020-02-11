@@ -12,6 +12,7 @@ class HexDumper:
         self.base_addr = base_addr
         self.endian = endian
         self.data = self.__process_data()
+        self.unpackable = self.byte_num == 4 or self.byte_num == 8  # 8bit, 16bitに対応するかもしれない
     
 
     def __process_data(self):
@@ -32,9 +33,49 @@ class HexDumper:
         return ret_data
 
 
-    def dump(self):
+    # simple dump
+    def dump(self, fmt=None):
+        if not self.unpackable:
+            self.raw_dump()
+            return
+
+        if fmt is None:
+            max_addr = self.data[-1].addr
+            max_byte_length = max_addr.bit_length() // 4 + 1
+
+            fmt = f"{{:{max_byte_length}x}}: {{}} -> {{:x}}"
+
         for hd in self.data:
-            print(f"{hd.addr}: {hd.dump_string} -> %x" %hd.value)
+            print(fmt.format(hd.addr, hd.dump_string, hd.value))
+
+
+    def raw_dump(self, fmt=None):
+        if fmt is None:
+            max_addr = self.data[-1].addr
+            max_byte_length = max_addr.bit_length() // 4 + 1
+
+            fmt = f"{{:{max_byte_length}x}}: {{}}"
+
+        for hd in self.data:
+            print(fmt.format(hd.addr, hd.dump_string))
+
+    
+    def string_dump(self, non_char=".", fmt=None):
+        if fmt is None:
+            max_addr = self.data[-1].addr
+            max_byte_length = max_addr.bit_length() // 4 + 1
+
+            fmt = f"{{:{max_byte_length}x}}: {{}} | {{}}"
+
+        for hd in self.data:
+            s = ""
+            for c in hd.raw_data:
+                if c > 0x1f and c < 0x7f:
+                    s += chr(c)
+                else:
+                    s += non_char
+
+            print(fmt.format(hd.addr, hd.dump_string, s))
 
 
 class HexData:
@@ -62,3 +103,10 @@ class HexData:
     
     def __unpack(self, endian):
         return unpack(self.raw_data, self.byte_num * 8, endian=endian)
+
+
+def filedump(filename, byte_num, endian="little", fmt=None):
+    fdata = open(filename, "rb").read()
+
+    dumper = HexDumper(fdata, byte_num, endian=endian)
+    dumper.dump(fmt=fmt)
