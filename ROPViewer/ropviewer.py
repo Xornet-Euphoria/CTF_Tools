@@ -70,7 +70,7 @@ class RopViewer:
         while True:
             ret += self.__str_mnemonic(mnemonic)
             if mnemonic.mnemonic in end_mnemonics:
-                return ret[:-1]
+                return ret
             ret += " -> "
             next_addr = self.__get_next_mnemonic_addr(mnemonic)
             mnemonic = self.mnemonics[next_addr]
