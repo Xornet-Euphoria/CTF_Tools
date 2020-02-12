@@ -53,14 +53,22 @@ class RopViewer:
         max_addr = self.dumper.data[-1].addr
         max_byte_length = max_addr.bit_length() // 4 + 1
 
-        fmt_not_rop = f"{{:{max_byte_length}x}}: {{}} -> {{:x}}"
-        fmt_rop = f"{{:{max_byte_length}x}}: {{}} -> {{:x}} | {{}}"
+        fmt_not_rop = f"{{:{max_byte_length}x}}: {{}} -> {{:16x}} | [unknown]"
+        fmt_rop = f"{{:{max_byte_length}x}}: {{}} -> {{:16x}} | [{{}}]: {{}}"
 
         for hd in self.dumper.data:
             if self.__in_text(hd.value):
-                print(fmt_rop.format(hd.addr, hd.dump_string, hd.value, self.__get_full_gadget(self.mnemonics[hd.value])))
+                if hd.value in self.mnemonics.keys():
+                    print(fmt_rop.format(hd.addr, hd.dump_string, hd.value, "gadget", self.__get_full_gadget_str(self.mnemonics[hd.value])))
+                else:
+                    print(fmt_rop.format(hd.addr, hd.dump_string, hd.value, "unknown gadget", "???"))
+
             elif hd.value in self._external_dict.keys():
-                print(fmt_rop.format(hd.addr, hd.dump_string, hd.value, self._external_dict[hd.value]))
+                print(fmt_rop.format(hd.addr, hd.dump_string, hd.value, "value", self._external_dict[hd.value]))
+            elif self.__analyze_pop(hd)["is_poped"]:
+                desc = "({})".format(self.__analyze_pop(hd)["register"])
+                
+                print(fmt_rop.format(hd.addr, hd.dump_string, hd.value, "poped", desc))
             else:
                 print(fmt_not_rop.format(hd.addr, hd.dump_string, hd.value))
 
@@ -82,15 +90,55 @@ class RopViewer:
     def __get_next_mnemonic_addr(self, mnemonic):
         return mnemonic.address + mnemonic.size
 
-    
+
     def __get_full_gadget(self, mnemonic):
-        ret = ""
+        ret = []
         end_mnemonics = ["ret", "jmp", "call"]
 
         while True:
-            ret += self.__str_mnemonic(mnemonic)
+            ret.append(mnemonic)
             if mnemonic.mnemonic in end_mnemonics:
                 return ret
-            ret += " -> "
             next_addr = self.__get_next_mnemonic_addr(mnemonic)
             mnemonic = self.mnemonics[next_addr]
+
+    
+    def __get_full_gadget_str(self, mnemonic):
+        ret = ""
+
+        for mne in self.__get_full_gadget(mnemonic):
+            ret += self.__str_mnemonic(mne)
+            ret += " -> "
+
+        return ret[:-4]
+
+    def __analyze_pop(self, hd):
+        previous_hd = self.dumper.get_prev_hd(hd)
+        stack_depth = 1
+
+        while not self.__in_text(previous_hd.value):
+            previous_hd = self.dumper.get_prev_hd(previous_hd)
+            stack_depth += 1
+
+        if previous_hd.value in self.mnemonics:
+            gadgets = self.__get_full_gadget(self.mnemonics[previous_hd.value])
+        else:
+            return {
+                "is_poped": True,
+                "register": "unknown"
+            }
+        
+        pop_regs = []
+        for g in gadgets:
+            if g.mnemonic == "pop":
+                pop_regs.append(g.op_str)
+
+
+        for i, reg in enumerate(pop_regs):
+            if i + 1 == stack_depth:
+                return {
+                    "is_poped": True,
+                    "register": reg
+                }
+
+        return {"is_poped": False}
