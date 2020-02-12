@@ -13,6 +13,20 @@ class HexDumper:
         self.endian = endian
         self.data = self.__process_data()
         self.unpackable = self.byte_num == 4 or self.byte_num == 8  # 8bit, 16bitに対応するかもしれない
+
+
+    def __get_hd_by_addr(self, addr):
+        current_index = (addr - self.base_addr) // self.byte_num
+        return self.data[current_index]
+
+
+    def get_prev_hd(self, hd):
+        prev_addr = hd.addr - self.base_addr - self.byte_num
+        return __get_hd_by_addr(prev_addr)
+
+
+    def get_next_hd(self, hd):
+        next_addr = hd.addr - self.base_addr + self.byte_num
     
 
     def __process_data(self):
