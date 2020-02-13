@@ -1,6 +1,7 @@
-from test_functions import *
+from test_functions import HexDumper, HexData
+from rpg import RPG
 from pwn import ELF
-from capstone import Cs, CS_ARCH_X86, CS_MODE_64
+from capstone import Cs, CS_ARCH_X86, CS_MODE_64, CS_MODE_32
 
 
 class RopViewer:
@@ -26,6 +27,18 @@ class RopViewer:
 
         mode = CS_MODE_64 if self.elf.bits == 64 else CS_MODE_32
         md = Cs(CS_ARCH_X86, mode)
+
+        self.rpg = RPG(elf_path)
+        gadget_dict = self.rpg.gadget_list
+        
+        """
+            {'vaddr': 4196002, 'gadget': 'adc byte ptr [rax], ah ; jmp rax', 'decodes': <generator object Cs.disasm at 0x7f203c6fe2e0>, 'bytes': b'\x10`\x00\xff\xe0', 'prev': b'\x00H\x85\xc0t\x11]\xbf`'}
+        """
+
+        self.gadgets = {}
+        for g in gadget_dict:
+            self.gadgets[g["vaddr"]] = g
+
         self.mnemonics = {}
 
         for mnemonic in md.disasm(self.text.data(), self.text.header.sh_addr):
@@ -57,20 +70,33 @@ class RopViewer:
         fmt_rop = f"{{:{max_byte_length}x}}: {{}} -> {{:16x}} | [{{}}]: {{}}"
 
         for hd in self.dumper.data:
+            if hd.value in self.gadgets.keys():
+                # ROPgadget
+                print(fmt_rop.format(hd.addr, hd.dump_string, hd.value, "gadget", self.gadgets[hd.value]["gadget"].replace(";", "->")))
+                continue
+
+            # not gadget but in text
             if self.__in_text(hd.value):
                 if hd.value in self.mnemonics.keys():
                     print(fmt_rop.format(hd.addr, hd.dump_string, hd.value, "gadget", self.__get_full_gadget_str(self.mnemonics[hd.value])))
                 else:
                     print(fmt_rop.format(hd.addr, hd.dump_string, hd.value, "unknown gadget", "???"))
+                
+                continue
 
-            elif hd.value in self._external_dict.keys():
+            # the value you defined (e.g. symbols, padding)
+            if hd.value in self._external_dict.keys():
                 print(fmt_rop.format(hd.addr, hd.dump_string, hd.value, "value", self._external_dict[hd.value]))
-            elif self.__analyze_pop(hd)["is_poped"]:
+                continue
+            
+            if self.__analyze_pop(hd)["is_poped"]:
                 desc = "({})".format(self.__analyze_pop(hd)["register"])
                 
                 print(fmt_rop.format(hd.addr, hd.dump_string, hd.value, "poped", desc))
-            else:
-                print(fmt_not_rop.format(hd.addr, hd.dump_string, hd.value))
+                continue
+            
+            # unknown value
+            print(fmt_not_rop.format(hd.addr, hd.dump_string, hd.value))
 
 
     def __in_text(self, addr):
