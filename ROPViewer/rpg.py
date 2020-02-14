@@ -12,10 +12,9 @@ class PseudoOpt:
 
 class RPG:
     def __init__(self, binary, depth=20):
-        self.depth = depth
-        self.opt = PseudoOpt(binary, depth)
-        self.binary = Binary(self.opt)
-        self.rpgadget_core = Gadgets(self.binary, self.opt, 0)
+        self.__opt = PseudoOpt(binary, depth)
+        self.__binary = Binary(self.__opt)
+        self.__rpg_core = Gadgets(self.__binary, self.__opt, 0)
         self.__gadget_list = []
 
         self.__serach_gadget()
@@ -26,14 +25,14 @@ class RPG:
 
 
     def __serach_gadget(self):
-        exec_sections = self.binary.getExecSections()
+        exec_sections = self.__binary.getExecSections()
 
         for sct in exec_sections:
-            self.__gadget_list += self.rpgadget_core.addROPGadgets(sct)
-            self.__gadget_list += self.rpgadget_core.addSYSGadgets(sct)
-            self.__gadget_list += self.rpgadget_core.addJOPGadgets(sct)
+            self.__gadget_list += self.__rpg_core.addROPGadgets(sct)
+            self.__gadget_list += self.__rpg_core.addSYSGadgets(sct)
+            self.__gadget_list += self.__rpg_core.addJOPGadgets(sct)
 
-        self.__gadget_list = self.rpgadget_core.passClean(self.__gadget_list, False)
+        self.__gadget_list = self.__rpg_core.passClean(self.__gadget_list, False)
 
         self.__gadget_list = alphaSortgadgets(self.__gadget_list)
 
